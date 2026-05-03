@@ -1,0 +1,42 @@
+# Разрешает двунаправленный трафик в паре: front-end ↔ back-end-api.
+# Содержит две NetworkPolicy: одна на стороне front-end (принимает от back-end-api),
+# другая на стороне back-end-api (принимает от front-end).
+# Любой другой под (admin-*, тестовый, без меток) к этой паре пробиться не сможет.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-from-backend-api
+spec:
+  podSelector:
+    matchLabels:
+      role: front-end
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: back-end-api
+      ports:
+        - protocol: TCP
+          port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-api-from-frontend
+spec:
+  podSelector:
+    matchLabels:
+      role: back-end-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: front-end
+      ports:
+        - protocol: TCP
+          port: 80
