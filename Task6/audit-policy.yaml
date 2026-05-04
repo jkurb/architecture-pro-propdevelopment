@@ -3,7 +3,8 @@
 #   - RequestResponse — полный лог запроса и ответа (включая тело).
 #     Применяется к чувствительным ресурсам (secrets, RBAC, pods и т.д.).
 #   - Metadata — только метаданные запроса (без тела).
-#     Применяется ко всему остальному, чтобы видеть сам факт обращения.
+#     Без указания resources => применяется ко всему остальному
+#     (нельзя использовать group: "*" — невалидно по RFC 1123).
 apiVersion: audit.k8s.io/v1
 kind: Policy
 rules:
@@ -15,6 +16,3 @@ rules:
       - group: "rbac.authorization.k8s.io"
         resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
   - level: Metadata
-    resources:
-      - group: "*"
-        resources: ["*"]
