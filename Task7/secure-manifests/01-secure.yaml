@@ -1,0 +1,31 @@
+# Исправленная версия 01-privileged-pod.yaml.
+# Что поменялось:
+#   - privileged: false (или просто не указано — default false)
+#   - добавлено всё, что требует PSA restricted: runAsNonRoot, seccompProfile,
+#     drop ALL capabilities, allowPrivilegeEscalation: false
+#   - добавлено readOnlyRootFilesystem: true (требование Gatekeeper-constraint)
+#   - образ заменён на busybox с явной командой — nginx:latest требует записи
+#     в /var/cache/nginx и не работает с readOnlyRootFilesystem без emptyDir.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-secure-01
+  namespace: audit-zone
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox
+      command: ["sleep", "infinity"]
+      securityContext:
+        privileged: false
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]

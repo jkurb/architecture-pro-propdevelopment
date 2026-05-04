@@ -1,0 +1,12 @@
+# Default deny для всего входящего трафика в namespace.
+# Применяется ко всем подам (podSelector: {}). После применения весь
+# ingress-трафик блокируется, кроме явно разрешённого другими политиками.
+# Egress оставлен открытым — иначе придётся отдельно разрешать DNS.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress

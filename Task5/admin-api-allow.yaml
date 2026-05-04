@@ -1,0 +1,42 @@
+# Разрешает двунаправленный трафик в паре: admin-front-end ↔ admin-back-end-api.
+# Симметрично non-admin-api-allow.yaml.
+# Подзадача «изолировать admin-back-end-api» решается комбинацией
+# default-deny-ingress + этой политики: admin-back-end-api принимает только от admin-front-end.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-admin-frontend-from-admin-backend-api
+spec:
+  podSelector:
+    matchLabels:
+      role: admin-front-end
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: admin-back-end-api
+      ports:
+        - protocol: TCP
+          port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-admin-backend-api-from-admin-frontend
+spec:
+  podSelector:
+    matchLabels:
+      role: admin-back-end-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: admin-front-end
+      ports:
+        - protocol: TCP
+          port: 80

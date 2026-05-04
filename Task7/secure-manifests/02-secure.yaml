@@ -1,0 +1,33 @@
+# Исправленная версия 02-hostpath-pod.yaml.
+# Что поменялось:
+#   - hostPath заменён на emptyDir — данные живут только время жизни пода,
+#     нет связи с файловой системой ноды.
+#   - добавлен полный набор полей PSA restricted и readOnlyRootFilesystem.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-secure-02
+  namespace: audit-zone
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox
+      command: ["sleep", "infinity"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      emptyDir: {}

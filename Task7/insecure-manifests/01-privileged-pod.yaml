@@ -1,0 +1,16 @@
+# Нарушение #1: privileged: true.
+# Привилегированный контейнер получает почти все capabilities ядра, включая
+# доступ к устройствам ноды и возможность монтировать host-fs — фактически
+# escape из контейнера на хост.
+# Должен быть отклонён PSA restricted и Gatekeeper-constraint deny-privileged.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-privileged
+  namespace: audit-zone
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      securityContext:
+        privileged: true

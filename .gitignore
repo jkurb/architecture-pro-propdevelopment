@@ -1,0 +1,6 @@
+.playwright-mcp/
+*.log
+.DS_Store
+.claude
+certs/
+kubeconfigs/

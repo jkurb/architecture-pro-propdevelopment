@@ -1,0 +1,45 @@
+# Audit policy для Kubernetes API server, ориентированная на отслеживание
+# нарушений PodSecurity и операций с Gatekeeper.
+#
+# Уровни:
+#   - RequestResponse — полный лог запроса и ответа (с телом). Применяется
+#     к pods (создание/обновление/удаление) и к Gatekeeper-объектам.
+#   - Metadata — для всего остального.
+#
+# Подключается к kube-apiserver через флаги:
+#   --audit-policy-file=/etc/kubernetes/audit-policy.yaml
+#   --audit-log-path=/var/log/audit.log
+# (см. Task6/00-setup-minikube.sh — там реализовано)
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+  # 1. Полный лог всех операций с Pod'ами — позволяет найти попытки
+  # деплоя insecure-манифестов (privileged, hostPath, root user).
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: ""
+        resources: ["pods"]
+
+  # 2. Любые операции с Gatekeeper-ресурсами — мониторим попытки
+  # отключить или подменить admission policies.
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: "templates.gatekeeper.sh"
+        resources: ["*"]
+      - group: "constraints.gatekeeper.sh"
+        resources: ["*"]
+      - group: "config.gatekeeper.sh"
+        resources: ["*"]
+
+  # 3. Изменения PSA-меток на namespace'ах (метки pod-security.kubernetes.io/*).
+  # Намеренное снижение уровня enforcement = индикатор tamper'а.
+  - level: RequestResponse
+    verbs: ["update", "patch"]
+    resources:
+      - group: ""
+        resources: ["namespaces"]
+
+  # 4. Metadata-уровень для всего остального — не раздуваем лог.
+  - level: Metadata
