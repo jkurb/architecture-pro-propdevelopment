@@ -1,0 +1,22 @@
+# Нарушение #2: hostPath volume.
+# Монтирование пути с ноды (`/`) даёт чтение/запись файловой системы хоста
+# из контейнера. Классический вектор для escape, чтения секретов kubelet,
+# подмены kubeconfig и т.д.
+# Должен быть отклонён PSA restricted и Gatekeeper-constraint deny-hostpath.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-hostpath
+  namespace: audit-zone
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - name: host-fs
+          mountPath: /host
+  volumes:
+    - name: host-fs
+      hostPath:
+        path: /
+        type: Directory

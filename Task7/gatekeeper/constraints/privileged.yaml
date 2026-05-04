@@ -1,0 +1,11 @@
+# Применяет ConstraintTemplate K8sPSPrivileged к Pod в namespace audit-zone.
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPrivileged
+metadata:
+  name: deny-privileged
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces: ["audit-zone"]

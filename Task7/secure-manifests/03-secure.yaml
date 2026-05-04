@@ -1,0 +1,26 @@
+# Исправленная версия 03-root-user-pod.yaml.
+# Что поменялось:
+#   - runAsUser: 1000 (не root), runAsNonRoot: true
+#   - добавлен полный набор полей PSA restricted и readOnlyRootFilesystem.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-secure-03
+  namespace: audit-zone
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox
+      command: ["sleep", "infinity"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]

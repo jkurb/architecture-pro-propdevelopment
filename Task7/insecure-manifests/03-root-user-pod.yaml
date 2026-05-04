@@ -1,0 +1,16 @@
+# Нарушение #3: запуск от root (UID 0).
+# В сочетании с уязвимостью в коде приложения root внутри контейнера
+# повышает шансы на эскалацию (capabilities, sysctl, mount внутри ns и т.д.).
+# Должен быть отклонён PSA restricted и Gatekeeper-constraint deny-root.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-root-user
+  namespace: audit-zone
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      securityContext:
+        runAsUser: 0
+        runAsNonRoot: false
